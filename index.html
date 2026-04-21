@@ -3,14 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detective Game</title>
+    <title>Cold Case: The Silent Conference</title>
     <style>
-        /* Add your styles here */
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --text: #e2e8f0;
+            --dim: #94a3b8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; color: var(--accent); }
+        
+        .nav { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        button { 
+            background: var(--card); color: var(--text); border: 1px solid var(--accent); 
+            padding: 10px 18px; border-radius: 6px; cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background: var(--accent); color: var(--bg); }
+        button.active { background: var(--accent); color: var(--bg); font-weight: bold; }
+
+        .card { background: var(--card); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); min-height: 300px; }
+        .hidden { display: none; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .log-box { background: #020617; padding: 15px; border-radius: 8px; font-family: monospace; border-left: 4px solid var(--accent); margin-top: 15px; min-height: 60px; }
+        
+        .badge { display: inline-block; background: #334155; padding: 2px 10px; border-radius: 20px; font-size: 0.8em; margin: 4px; border: 1px solid var(--dim); }
+        .suspect-item { padding: 10px; border-bottom: 1px solid #334155; }
+        
+        select { background: var(--bg); color: white; padding: 10px; border-radius: 5px; border: 1px solid var(--accent); margin: 10px 0; width: 100%; }
+        #win-msg { font-weight: bold; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        .success-box { background: rgba(34, 197, 94, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .fail-box { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Detective Game</h1>
-    <p>Can you solve the mystery?</p>
-    <!-- Game logic goes here -->
+
+<div class="container">
+    <h1>🕵️ Advanced Investigation: The Blue Ledger</h1>
+    
+    <div class="nav">
+        <button onclick="nav('dash')" class="nav-btn" id="btn-dash">Case File</button>
+        <button onclick="nav('witness')" class="nav-btn" id="btn-witness">Witnesses</button>
+        <button onclick="nav('evidence')" class="nav-btn" id="btn-evidence">Evidence</button>
+        <button onclick="nav('interrogate')" class="nav-btn" id="btn-interrogate">Interrogation</button>
+        <button onclick="nav('accuse')" class="nav-btn" id="btn-accuse">Prosecute</button>
+    </div>
+
+    <div id="dash" class="card">
+        <h3>Case Brief</h3>
+        <p>CEO Harold Finch was found dead in the airtight conference room. No sign of struggle. Death by respiratory failure.</p>
+        <div class="grid">
+            <div>
+                <h4>Current Leads</h4>
+                <div id="lead-list"><p class="dim text-sm">No significant leads yet...</p></div>
+            </div>
+            <div>
+                <h4>Inventory</h4>
+                <div id="inventory-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="witness" class="card hidden">
+        <h3>Witness Testimonies</h3>
+        <div class="grid">
+            <button onclick="talkWitness('Marcus')">Talk to Marcus (Security)</button>
+            <button onclick="talkWitness('Elena')">Talk to Elena (Accounting)</button>
+        </div>
+        <div class="log-box" id="witness-log">Select a witness to interview...</div>
+    </div>
+
+    <div id="evidence" class="card hidden">
+        <h3>Crime Scene Search</h3>
+        <div class="grid">
+            <button onclick="search('trash')">Search Trash Can</button>
+            <button onclick="search('vent')">Examine Air Vents</button>
+            <button onclick="search('phone')">Check Harold's Phone</button>
+            <button onclick="search('locker')">Inspect Staff Lockers</button>
+        </div>
+        <div class="log-box" id="evidence-log">Search the room for physical clues...</div>
+    </div>
+
+    <div id="interrogate" class="card hidden">
+        <h3>Interrogate Suspects</h3>
+        <div class="grid">
+            <div id="suspect-list">
+                <div class="suspect-item"><b>Lena (Assistant)</b> <button onclick="question('Lena')">Ask</button></div>
+                <div class="suspect-item"><b>Victor (Partner)</b> <button onclick="question('Victor')">Ask</button></div>
+                <div class="suspect-item"><b>Iris (HR)</b> <button onclick="question('Iris')">Ask</button></div>
+                <div class="suspect-item"><b>Sam (IT)</b> <button onclick="question('Sam')">Ask</button></div>
+            </div>
+            <div class="log-box" id="dialogue">Select a suspect to begin.</div>
+        </div>
+    </div>
+
+    <div id="accuse" class="card hidden">
+        <h3>Formal Accusation</h3>
+        <p>To win the case, you must link the person, the motive, and the smoking gun.</p>
+        
+        <label>Primary Suspect:</label>
+        <select id="accuse-suspect">
+            <option value="Lena">Lena</option>
+            <option value="Victor">Victor</option>
+            <option value="Iris">Iris</option>
+            <option value="Sam">Sam</option>
+        </select>
+
+        <label>The Motive:</label>
+        <select id="accuse-motive">
+            <option value="none">--- Choose Motive ---</option>
+            <option value="money">Embezzlement Cover-up</option>
+            <option value="revenge">Fired unjustly</option>
+            <option value="promotion">Corporate Takeover</option>
+        </select>
+
+        <label>Key Evidence:</label>
+        <select id="accuse-evidence">
+            <option value="none">--- Choose Evidence ---</option>
+            <option value="receipt">Chemical Purchase Receipt</option>
+            <option value="code">Remote Access Logs</option>
+            <option value="ledger">The Discrepancy Ledger</option>
+        </select>
+
+        <button style="width:100%; margin-top:20px; border-color:var(--success)" onclick="prosecute()">SUBMIT CASE TO COURT</button>
+        <div id="win-msg" class="hidden"></div>
+    </div>
+</div>
+
+<script>
+    // Game State
+    let state = {
+        witnessesTalked: [],
+        evidenceFound: [],
+        interrogations: 0,
+        unlockedMotive: false,
+        unlockedAccomplice: false
+    };
+
+    function nav(id) {
+        document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.remove('hidden');
+        document.getElementById('btn-' + id).classList.add('active');
+    }
+
+    function updateInventory() {
+        const inv = document.getElementById('inventory-list');
+        inv.innerHTML = state.evidenceFound.map(e => `<span class="badge">📂 ${e}</span>`).join('');
+        
+        const leads = document.getElementById('lead-list');
+        let leadHtml = '';
+        if(state.witnessesTalked.includes('Elena')) leadHtml += '<p>⚠️ Financial motive suspected.</p>';
+        if(state.witnessesTalked.includes('Marcus')) leadHtml += '<p>⚠️ Someone entered the vents.</p>';
+        leads.innerHTML = leadHtml || 'Keep digging...';
+    }
+
+    function search(item) {
+        const log = document.getElementById('evidence-log');
+        if (item === 'trash' && !state.evidenceFound.includes('Torn Receipt')) {
+            state.evidenceFound.push('Torn Receipt');
+            log.innerText = "Found a torn receipt for 'Industrial Grade Pesticide'.";
+        } else if (item === 'vent') {
+            log.innerText = "The vent cover is loose. Micro-residue of gas found inside.";
+            state.evidenceFound.push('Gas Residue');
+        } else if (item === 'phone') {
+            log.innerText = "Harold's last text: 'Iris, I know what you did with the accounts.'";
+            state.unlockedMotive = true;
+            state.evidenceFound.push('Threatening Text');
+        } else if (item === 'locker') {
+            log.innerText = "In Iris's locker, you find a hidden ledger with missing millions.";
+            state.evidenceFound.push('The Ledger');
+        }
+        updateInventory();
+    }
+
+    function talkWitness(name) {
+        const log = document.getElementById('witness-log');
+        if(!state.witnessesTalked.includes(name)) state.witnessesTalked.push(name);
+        
+        if(name === 'Marcus') {
+            log.innerText = "Marcus: 'I saw someone from IT, maybe Sam, resetting the security hub around 10 PM.'";
+        } else if (name === 'Elena') {
+            log.innerText = "Elena: 'The CEO was planning a surprise audit this morning. Iris seemed... panicked.'";
+        }
+        updateInventory();
+    }
+
+    function question(suspect) {
+        const log = document.getElementById('dialogue');
+        state.interrogations++;
+
+        if(suspect === 'Iris') {
+            if(state.evidenceFound.includes('The Ledger')) {
+                log.innerText = "Iris: (Pale) That ledger... it's not what it looks like. I was just 'fixing' the errors!";
+            } else {
+                log.innerText = "Iris: I was in HR all night filing paperwork. Ask anyone.";
+            }
+        } else if (suspect === 'Sam') {
+            if(state.witnessesTalked.includes('Marcus')) {
+                log.innerText = "Sam: 'Okay! Iris paid me to loop the cameras. I didn't know she'd kill him!'";
+                state.unlockedAccomplice = true;
+            } else {
+                log.innerText = "Sam: System was glitchy. I spent the night in the server room.";
+            }
+        } else if (suspect === 'Victor') {
+            log.innerText = "Victor: 'Harold and I were brothers. I gain nothing from this... except the company, I suppose.'";
+        } else {
+            log.innerText = "Lena: 'I just brought the coffee. The room was already locked when I arrived.'";
+        }
+    }
+
+    function prosecute() {
+        const suspect = document.getElementById('accuse-suspect').value;
+        const motive = document.getElementById('accuse-motive').value;
+        const evidence = document.getElementById('accuse-evidence').value;
+        const msg = document.getElementById('win-msg');
+        msg.classList.remove('hidden');
+
+        if(suspect === 'Iris' && motive === 'money' && evidence === 'ledger') {
+            msg.className = "success-box";
+            msg.innerHTML = "<h3>CASE CLOSED</h3><p>The jury found Iris guilty of First Degree Murder. Your evidence proved she killed Harold to hide her embezzlement. Sam testified against her as part of a plea deal.</p>";
+        } else {
+            msg.className = "fail-box";
+            msg.innerHTML = "<h3>MISTRIAL</h3><p>The evidence didn't stick. The suspect's lawyer torn your argument apart. Keep investigating.</p>";
+        }
+    }
+
+    updateInventory();
+</script>
+
 </body>
 </html>
